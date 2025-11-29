@@ -81,12 +81,9 @@ async def get_events_by_owner(db: AsyncSession, owner_id: int) -> List[models.Ev
         select(models.Event)
         .where(models.Event.owner_id == owner_id)
         .options(
-            joinedload(models.Event.owner),
-            joinedload(models.Event.tickets).options(
-                joinedload(models.Ticket.participant)
+            joinedload(models.Event.owner)
             )
         )
-    )
     result = await db.execute(query)
     return result.scalars().unique().all()
 
@@ -98,10 +95,7 @@ async def get_all_active_events(db: AsyncSession) -> List[models.Event]:
         select(models.Event)
         .where(models.Event.start_time > datetime.now())
         .options(
-            joinedload(models.Event.owner),
-            joinedload(models.Event.tickets).options(
-                joinedload(models.Ticket.participant)
-            )
+            joinedload(models.Event.owner)
         )
     )
     result = await db.execute(query)
@@ -115,10 +109,7 @@ async def get_old_events(db: AsyncSession) -> List[models.Event]:
         select(models.Event)
         .where(models.Event.start_time <= datetime.now())
         .options(
-            joinedload(models.Event.owner),
-            joinedload(models.Event.tickets).options(
-                joinedload(models.Ticket.participant)
-            )
+            joinedload(models.Event.owner)
         )
     )
     result = await db.execute(query)

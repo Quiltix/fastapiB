@@ -44,7 +44,7 @@ async def update_event(
     updated_event = await eventservice.update_event(db=db, event_id=event_id, schema=schema, user_id=user_id)
     return updated_event
 
-@router.get("/active", response_model=List[schemas.Event], status_code=status.HTTP_200_OK, summary="Получение будущих мероприятия")
+@router.get("/active", response_model=List[schemas.EventShort], status_code=status.HTTP_200_OK, summary="Получение будущих мероприятия")
 async def get_active_events(db: AsyncSession = Depends(get_db),user_id: int = Depends(check_jwt)):
     """
     Создает новое мероприятие. Доступно только для аутентифицированных пользователей.
@@ -52,7 +52,7 @@ async def get_active_events(db: AsyncSession = Depends(get_db),user_id: int = De
     event = await eventservice.get_all_active_events(db=db)
     return event
 
-@router.get("/history", response_model=List[schemas.Event], status_code=status.HTTP_200_OK, summary="Получение прошедших мероприятия")
+@router.get("/history", response_model=List[schemas.EventShort], status_code=status.HTTP_200_OK, summary="Получение прошедших мероприятия")
 async def get_old_events(db: AsyncSession = Depends(get_db), user_id: int = Depends(check_jwt)):
     """
     Создает новое мероприятие. Доступно только для аутентифицированных пользователей.
