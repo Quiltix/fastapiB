@@ -1,0 +1,12 @@
+# Веб-фреймворк и сервер
+uvicorn[standard]
+fastapi[standard]
+
+sqlalchemy[asyncio]
+asyncpg
+
+pydantic
+pydantic-settings
+
+python-jose[cryptography]
+bcrypt
