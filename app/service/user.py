@@ -8,30 +8,6 @@ from app.db import models
 from app.schemas import schemas
 from app.service import security
 
-
-async def register_new_user(db: AsyncSession, user_schema: schemas.UserAuth) -> models.User:
-    # Регистрация нового пользователя
-    existing_user = await get_by_username(db, username=user_schema.username)
-    if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь уже существует")
-
-    hashed_password = security.get_password_hash(user_schema.password)
-
-    new_user_instance = await create(db=db, username=user_schema.username, hashed_password=hashed_password)
-
-    created_user = await get_by_id(db, user_id=new_user_instance.id)
-
-    return created_user
-
-async def authenticate_user(db: AsyncSession, user_schema: schemas.UserAuth) -> models.User:
-    # Аутентификация пользователя
-    user = await get_by_username(db, username=user_schema.username)
-
-    if not user or not security.verify_password(user_schema.password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный логин или пароль")
-
-    return user
-
 async def update_username(db: AsyncSession, current_user: models.User, new_username: str) -> models.User:
     # Обновление имени пользователя
     existing_user = await get_by_username(db, username=new_username)
@@ -85,14 +61,6 @@ async def get_by_username(db: AsyncSession, username: str) -> models.User | None
     )
     result = await db.execute(query)
     return result.scalars().unique().first()
-
-async def create(db: AsyncSession, username: str, hashed_password: str) -> models.User:
-    # Создание нового пользователя
-    db_user = models.User(username=username, hashed_password=hashed_password)
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
-    return db_user
 
 async def update(db: AsyncSession, user: models.User) -> models.User:
     # Обновление пользователя
