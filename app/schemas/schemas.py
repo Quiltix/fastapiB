@@ -3,6 +3,12 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+class UpdateUsername(BaseModel):
+    username: str = Field(..., min_length=5)
+
+class UpdatePassword(BaseModel):
+    old_password: str = Field(..., min_length=5)
+    new_password: str = Field(..., min_length=5)
 
 class User(BaseModel):
     id: int
