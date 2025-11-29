@@ -10,8 +10,8 @@ class User(Base):
     """
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
 
@@ -26,8 +26,8 @@ class Event(Base):
     """
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True, nullable=False)
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     start_time = Column(DateTime(timezone=True))
     location = Column(String, nullable=False)
@@ -44,7 +44,7 @@ class Ticket(Base):
     """
     __tablename__ = "tickets"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     start_time = Column(DateTime(timezone=True),default=datetime.datetime.now)
 
 

@@ -22,6 +22,10 @@ async def create_event(db: AsyncSession, schema: schemas.EventCreate, user_id: i
     created_event = await get_by_id(db, event_id=db_event.id)
 
     return created_event
+
+async def update_event(db: AsyncSession, event: schemas.EventCreate, user_id: int  ) -> models.Event:
+
+
 async def get_by_id(db: AsyncSession, event_id: int) -> models.Event | None:
     """Получает мероприятие по ID с предзагрузкой данных о владельце и билетах."""
     query = (
@@ -34,3 +38,10 @@ async def get_by_id(db: AsyncSession, event_id: int) -> models.Event | None:
     )
     result = await db.execute(query)
     return result.scalars().first()
+
+async def update(db: AsyncSession, event: models.Event) -> models.Event:
+    """Сохраняет изменения в объекте мероприятия в БД."""
+    db.add(event)
+    await db.commit()
+    await db.refresh(event)
+    return event
