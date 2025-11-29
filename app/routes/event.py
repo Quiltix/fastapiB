@@ -25,3 +25,20 @@ async def create_new_event(db: AsyncSession = Depends(get_db), schema: schemas.E
 """
     event = await eventservice.create_event(db=db, schema=schema, user_id=user_id)
     return event
+
+@router.patch("/{event_id}", response_model=schemas.Event, summary="Редактирование мероприятия"
+)
+async def update_existing_event(
+    event_id: int,
+    db: AsyncSession = Depends(get_db),
+    schema: schemas.EventUpdate = Body(...),
+    user_id: int = Depends(check_jwt),
+):
+    """
+    Обновляет данные мероприятия по его ID.
+
+    Доступно только для владельца мероприятия. Позволяет частично
+    обновлять данные (например, можно прислать только `title`).
+    """
+    updated_event = await eventservice.update_event(db=db, event_id=event_id, schema=schema, user_id=user_id)
+    return updated_event
