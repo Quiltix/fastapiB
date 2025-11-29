@@ -1,8 +1,8 @@
 # app/main.py
 
 from fastapi import FastAPI
-from sqlalchemy import engine
 
+from app.db.database import engine
 from app.db.models import Base
 
 # Создаем экземпляр FastAPI
