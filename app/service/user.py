@@ -14,15 +14,22 @@ async def register_new_user(db: AsyncSession, user_schema: schemas.UserAuth) -> 
     existing_user = await get_by_username(db, username=user_schema.username)
     if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Пользователь уже существует",
         )
 
 
     hashed_password = security.get_password_hash(user_schema.password)
 
-    new_user = await create(db=db, username=user_schema.username, hashed_password=hashed_password)
-    return new_user
+    new_user_instance = await create(
+        db=db,
+        username=user_schema.username,
+        hashed_password=hashed_password
+    )
+
+    created_user = await get_by_id(db, user_id=new_user_instance.id)
+
+    return created_user
 
 async def authenticate_user(db: AsyncSession, user_schema: schemas.UserAuth) -> models.User:
     """
@@ -64,8 +71,8 @@ async def get_by_username(db: AsyncSession, username: str) -> models.User | None
         select(models.User)
         .where(models.User.username == username)
         .options(
-            selectinload(models.User.created_events), # Загрузить созданные мероприятия
-            selectinload(models.User.tickets).options(selectinload(models.Ticket.event)) # Загрузить билеты и сразу мероприятия для них
+            selectinload(models.User.created_events),
+            selectinload(models.User.tickets).options(selectinload(models.Ticket.event))
         )
     )
     result = await db.execute(query)
