@@ -1,7 +1,7 @@
 # app/routers/events.py
 from typing import List
 
-from fastapi import APIRouter, status, Depends, Body
+from fastapi import APIRouter, status, Depends, Body, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
@@ -58,4 +58,12 @@ async def get_old_events(db: AsyncSession = Depends(get_db), user_id: int = Depe
     Создает новое мероприятие. Доступно только для аутентифицированных пользователей.
 """
     event = await eventservice.get_old_events(db=db)
+    return event
+
+@router.get("/{event_id}", response_model=schemas.Event, status_code=status.HTTP_200_OK, summary="Получение мероприятия по ID")
+async def get_event_by_id(event_id: int,db: AsyncSession = Depends(get_db), user_id: int = Depends(check_jwt)):
+
+    event = await eventservice.get_by_id(db=db,event_id = event_id)
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Мероприятие с ID {event_id} не найдено.")
     return event
