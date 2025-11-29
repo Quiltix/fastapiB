@@ -36,3 +36,8 @@ async def create(db: AsyncSession, username: str, hashed_password: str) -> model
     await db.commit()
     await db.refresh(db_user)
     return db_user
+
+async def create_user_token(user_id: int) -> schemas.Token:
+    # Создание токена для пользователя
+    access_token = security.create_access_token(data={"sub": str(user_id)})
+    return schemas.Token(access_token=access_token, token_type="bearer")

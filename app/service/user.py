@@ -31,10 +31,6 @@ async def update_password(db: AsyncSession, current_user: models.User, old_passw
     updated_user = await update(db, user=current_user)
     return updated_user
 
-async def create_user_tokens(user_id: int) -> schemas.Token:
-    # Создание токена для пользователя
-    access_token = security.create_access_token(data={"sub": str(user_id)})
-    return schemas.Token(access_token=access_token, token_type="bearer")
 
 async def get_by_id(db: AsyncSession, user_id: int) -> models.User | None:
     # Получение пользователя по ID с созданными событиями и билетами
