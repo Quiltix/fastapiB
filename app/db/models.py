@@ -45,8 +45,6 @@ class Ticket(Base):
     __tablename__ = "tickets"
 
     id = Column(Integer, primary_key=True)
-    start_time = Column(DateTime(timezone=True),default=datetime.datetime.now)
-
 
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
 
