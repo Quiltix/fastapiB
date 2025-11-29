@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.schemas import schemas
 import app.service.user as userservice
+from app.service.security import decode_token, check_jwt
 
 router = APIRouter(
     prefix="/user"
@@ -25,3 +26,23 @@ async def login(db: AsyncSession = Depends(get_db), schema: schemas.UserAuth = B
     Принимает на вход данные пользователя (username и password) и возвращает токен доступа."""
     user = await userservice.authenticate_user(db, schema)
     return await userservice.create_user_tokens(user.id)
+
+@router.patch("/username", response_model=schemas.User, summary="Сменить имя пользователя")
+async def update_user_username(db: AsyncSession = Depends(get_db), schema: schemas.UpdateUsername = Body(...), user_id: int = Depends(check_jwt),):
+    """
+    Обновляет имя текущего пользователя.
+    """
+    current_user = await userservice.get_by_id(db, user_id)
+    updated_user = await userservice.update_username(db=db, current_user=current_user, new_username=schema.username)
+    return updated_user
+
+@router.patch("/me/password", status_code=status.HTTP_200_OK, summary="Сменить пароль")
+async def update_user_password(db: AsyncSession = Depends(get_db), schema: schemas.UpdatePassword = Body(...), user_id: int = Depends(check_jwt),):
+    """
+    Обновляет пароль текущего пользователя.
+    При успешной смене пароля возвращает пустой ответ со статусом 204.
+    """
+    current_user = await userservice.get_by_id(db, user_id)
+    await userservice.update_password(db=db, current_user=current_user, old_password=schema.old_password, new_password=schema.new_password
+    )
+    return None

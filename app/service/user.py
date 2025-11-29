@@ -47,6 +47,35 @@ async def authenticate_user(db: AsyncSession, user_schema: schemas.UserAuth) -> 
 
     return user
 
+async def update_username(db: AsyncSession, current_user: models.User, new_username: str) -> models.User:
+
+    existing_user = await get_by_username(db, username=new_username)
+    if existing_user and existing_user.id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Это имя пользователя уже занято."
+        )
+
+    current_user.username = new_username
+
+    updated_user = await update(db, user=current_user)
+    return updated_user
+
+
+async def update_password(db: AsyncSession, current_user: models.User, old_password: str, new_password: str) -> models.User:
+    if not security.verify_password(old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Неверный текущий пароль."
+        )
+
+    new_hashed_password = security.get_password_hash(new_password)
+
+    current_user.hashed_password = new_hashed_password
+
+    updated_user = await update(db, user=current_user)
+    return updated_user
+
 async def create_user_tokens(user_id: int) -> schemas.Token:
     """Создает и возвращает access_token для пользователя."""
     access_token = security.create_access_token(data={"sub": str(user_id)})
@@ -85,6 +114,13 @@ async def create(db: AsyncSession, username: str, hashed_password: str) -> model
     await db.commit()
     await db.refresh(db_user)
     return db_user
+
+async def update(db: AsyncSession, user: models.User) -> models.User:
+    """Сохраняет изменения в объекте пользователя в БД."""
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
 
 
 
