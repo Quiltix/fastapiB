@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16-alpine
+
+    environment:
+      POSTGRES_USER: user123
+      POSTGRES_DB: event
+      POSTGRES_PASSWORD: qwerty123
+
+    ports:
+      - 127.0.0.1:5432:5432
