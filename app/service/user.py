@@ -2,7 +2,7 @@ from rich import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import status, HTTPException
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.db import models
 from app.schemas import schemas
@@ -87,12 +87,12 @@ async def get_by_id(db: AsyncSession, user_id: int) -> models.User | None:
         select(models.User)
         .where(models.User.id == user_id)
         .options(
-            selectinload(models.User.created_events),
-            selectinload(models.User.tickets)
+            joinedload(models.User.created_events),
+            joinedload(models.User.tickets)
         )
     )
     result = await db.execute(query)
-    return result.scalars().first()
+    return result.scalars().unique().first()
 
 async def get_by_username(db: AsyncSession, username: str) -> models.User | None:
     """Получает пользователя по его имени с предзагрузкой связей."""
@@ -100,12 +100,12 @@ async def get_by_username(db: AsyncSession, username: str) -> models.User | None
         select(models.User)
         .where(models.User.username == username)
         .options(
-            selectinload(models.User.created_events),
-            selectinload(models.User.tickets).options(selectinload(models.Ticket.event))
+            joinedload(models.User.created_events),
+            joinedload(models.User.tickets).options(joinedload(models.Ticket.event))
         )
     )
     result = await db.execute(query)
-    return result.scalars().first()
+    return result.scalars().unique().first()
 
 async def create(db: AsyncSession, username: str, hashed_password: str) -> models.User:
     """Создает нового пользователя в базе данных."""

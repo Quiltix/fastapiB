@@ -1,6 +1,7 @@
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.db import models
 from app.schemas import schemas
@@ -23,7 +24,36 @@ async def create_event(db: AsyncSession, schema: schemas.EventCreate, user_id: i
 
     return created_event
 
-async def update_event(db: AsyncSession, event: schemas.EventCreate, user_id: int  ) -> models.Event:
+
+async def update_event(db: AsyncSession, event_id: int, schema: schemas.EventUpdate, user_id: int) -> models.Event:
+    """
+    Обновляет данные мероприятия.
+    """
+    event_to_update = await get_by_id(db, event_id=event_id)
+
+    if not event_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Мероприятие не найдено."
+        )
+
+    if event_to_update.owner_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="У вас нет прав на редактирование этого мероприятия."
+        )
+
+    update_data = schema.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(event_to_update, key, value)
+
+    db.add(event_to_update)
+    await db.commit()
+    await db.refresh(event_to_update)
+
+    updated_event = await get_by_id(db, event_id=event_to_update.id)
+    return updated_event
 
 
 async def get_by_id(db: AsyncSession, event_id: int) -> models.Event | None:
@@ -32,16 +62,9 @@ async def get_by_id(db: AsyncSession, event_id: int) -> models.Event | None:
         select(models.Event)
         .where(models.Event.id == event_id)
         .options(
-            selectinload(models.Event.owner),
-            selectinload(models.Event.tickets)
+            joinedload(models.Event.owner),
+            joinedload(models.Event.tickets)
         )
     )
     result = await db.execute(query)
-    return result.scalars().first()
-
-async def update(db: AsyncSession, event: models.Event) -> models.Event:
-    """Сохраняет изменения в объекте мероприятия в БД."""
-    db.add(event)
-    await db.commit()
-    await db.refresh(event)
-    return event
+    return result.scalars().unique().first()

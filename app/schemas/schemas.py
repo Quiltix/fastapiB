@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -36,6 +36,12 @@ class EventCreate(BaseModel):
     description: str
     start_time: datetime
     location: str = Field(..., min_length=4)
+
+class EventUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=4)
+    description: Optional[str] = None
+    start_time: Optional[datetime] = None
+    location: Optional[str] = Field(None, min_length=4)
 
 class TicketCreate(BaseModel):
     event_id: int
