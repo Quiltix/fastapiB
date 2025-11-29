@@ -29,7 +29,7 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    id: int
+    sub: str
 
 class EventCreate(BaseModel):
     title: str = Field(..., min_length=4)
