@@ -1,9 +1,12 @@
+from typing import List
+
 from fastapi import APIRouter, status, HTTPException, Depends, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
 from app.schemas import schemas
 import app.service.user as userservice
+import app.service.event as eventservice
 from app.service.security import decode_token, check_jwt
 
 router = APIRouter(
@@ -47,3 +50,9 @@ async def update_user_password(db: AsyncSession = Depends(get_db), schema: schem
     await userservice.update_password(db=db, current_user=current_user, old_password=schema.old_password, new_password=schema.new_password
     )
     return None
+
+@router.get("/events", response_model=List[schemas.Event], summary="Получение списка мероприятий, созданных пользователем")
+async def get_my_created_events(db: AsyncSession = Depends(get_db), user_id: int = Depends(check_jwt)):
+
+    events = await eventservice.get_events_by_owner(db=db, owner_id=user_id)
+    return events
