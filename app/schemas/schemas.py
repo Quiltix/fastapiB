@@ -61,7 +61,6 @@ class ParticipantInTicket(BaseModel):
 
 class TicketInEvent(BaseModel):
     id: int
-    registration_time: datetime
     participant: ParticipantInTicket
 
     class Config:
@@ -78,7 +77,6 @@ class EventInUser(BaseModel):
 
 class TicketInUser(BaseModel):
     id: int
-    registration_time: datetime
     event: EventInUser
 
     class Config:
@@ -100,7 +98,6 @@ class Event(BaseModel):
 
 class Ticket(BaseModel):
     id: int
-    registration_time: datetime
     event: EventInUser
     participant: ParticipantInTicket
 
