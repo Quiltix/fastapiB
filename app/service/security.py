@@ -17,6 +17,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 
 def get_password_hash(password: str) -> str:
+    # Получение хеша пароля.
     password_bytes = password.encode('utf-8')
 
     salt = bcrypt.gensalt()
@@ -26,9 +27,7 @@ def get_password_hash(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Проверяет, соответствует ли обычный пароль хешированному.
-    """
+    # Сверяет обычный пароль с захешированным паролем.
     plain_password_bytes = plain_password.encode('utf-8')
 
     hashed_password_bytes = hashed_password.encode('utf-8')
@@ -37,7 +36,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Создает JWT токен."""
+    # Создает токен.
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -49,21 +48,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 def decode_token(token: str) -> TokenData:
-    """Декодирует токен и возвращает данные токена."""
+    #Декодирует токен и возвращает данные токена.
 
     payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
 
     return TokenData.model_validate(payload)
 
 async def check_jwt(credentials: HTTPBearer = Depends(HTTPBearer(auto_error=False))) -> int:
-    """Зависимость для аутентификации пользователя."""
+    # Проверяет токен пользователя, используется в роутерах.
     try:
         if not credentials:
             raise JWTError
         token_data = decode_token(credentials.credentials)
         return int(token_data.sub)
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Ошибка аутентификации"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Ошибка аутентификации")

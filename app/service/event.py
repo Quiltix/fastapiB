@@ -11,13 +11,9 @@ from app.schemas import schemas
 
 
 async def create_event(db: AsyncSession, schema: schemas.EventCreate, user_id: int) -> models.Event:
-    """Создает новое мероприятие в базе данных."""
+    # Создание нового мероприятия
 
-
-    db_event = models.Event(
-        **schema.model_dump(),
-        owner_id=user_id
-    )
+    db_event = models.Event(**schema.model_dump(), owner_id=user_id)
 
     db.add(db_event)
     await db.commit()
@@ -29,22 +25,14 @@ async def create_event(db: AsyncSession, schema: schemas.EventCreate, user_id: i
 
 
 async def update_event(db: AsyncSession, event_id: int, schema: schemas.EventUpdate, user_id: int) -> models.Event:
-    """
-    Обновляет данные мероприятия.
-    """
+    # Обновление мероприятия
     event_to_update = await get_by_id(db, event_id=event_id)
 
     if not event_to_update:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Мероприятие не найдено."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Мероприятие не найдено.")
 
     if event_to_update.owner_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="У вас нет прав на редактирование этого мероприятия."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="У вас нет прав на редактирование этого мероприятия.")
 
     update_data = schema.model_dump(exclude_unset=True)
 
@@ -60,7 +48,7 @@ async def update_event(db: AsyncSession, event_id: int, schema: schemas.EventUpd
 
 
 async def get_by_id(db: AsyncSession, event_id: int) -> models.Event | None:
-    """Получает мероприятие по ID с предзагрузкой данных о владельце и билетах."""
+    # Получение мероприятия по ID
     query = (
         select(models.Event)
         .where(models.Event.id == event_id)
@@ -74,9 +62,7 @@ async def get_by_id(db: AsyncSession, event_id: int) -> models.Event | None:
 
 
 async def get_events_by_owner(db: AsyncSession, owner_id: int) -> List[models.Event]:
-    """
-    Получает список всех мероприятий, созданных указанным пользователем.
-    """
+    # Получение списка всех мероприятий, созданных пользователем.
     query = (
         select(models.Event)
         .where(models.Event.owner_id == owner_id)
@@ -87,10 +73,21 @@ async def get_events_by_owner(db: AsyncSession, owner_id: int) -> List[models.Ev
     result = await db.execute(query)
     return result.scalars().unique().all()
 
+async def get_events_by_owner_active(db: AsyncSession, owner_id: int) -> List[models.Event]:
+    # Получение списка будущих мероприятий, созданных пользователем.
+    query = (
+        select(models.Event)
+        .where(models.Event.owner_id == owner_id)
+        .where(models.Event.start_time > datetime.now())
+        .options(
+            joinedload(models.Event.owner)
+            )
+        )
+    result = await db.execute(query)
+    return result.scalars().unique().all()
+
 async def get_all_active_events(db: AsyncSession) -> List[models.Event]:
-    """
-    Получает список всех мероприятий, созданных указанным пользователем.
-    """
+   # Получение списка будущих мероприятий.
     query = (
         select(models.Event)
         .where(models.Event.start_time > datetime.now())
@@ -102,9 +99,7 @@ async def get_all_active_events(db: AsyncSession) -> List[models.Event]:
     return result.scalars().unique().all()
 
 async def get_old_events(db: AsyncSession) -> List[models.Event]:
-    """
-    Получает список всех мероприятий, созданных указанным пользователем.
-    """
+    # Получение списка прошедших мероприятий.
     query = (
         select(models.Event)
         .where(models.Event.start_time <= datetime.now())

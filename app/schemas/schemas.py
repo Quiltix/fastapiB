@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+#Схемы пользователя
 class UpdateUsername(BaseModel):
     username: str = Field(..., min_length=5)
 
@@ -23,7 +24,7 @@ class UserAuth(BaseModel):
     username: str = Field(..., min_length=5)
     password: str = Field(..., min_length=5)
 
-
+#Схемы для токена
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -31,6 +32,7 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     sub: str
 
+#Схемы событий
 class EventCreate(BaseModel):
     title: str = Field(..., min_length=4)
     description: str
@@ -43,10 +45,31 @@ class EventUpdate(BaseModel):
     start_time: Optional[datetime] = None
     location: Optional[str] = Field(None, min_length=4)
 
-class TicketCreate(BaseModel):
-    event_id: int
+class Event(BaseModel):
+    id: int
+    title: str
+    description: str
+    start_time: datetime
+    location: str
+    owner: OwnerInEvent
+    tickets: List[TicketInEvent] = []
+
+    class Config:
+        from_attributes = True
+
+class EventShort(BaseModel):
+    id: int
+    title: str
+    description: str
+    start_time: datetime
+    location: str
+    owner: OwnerInEvent
+
+    class Config:
+        from_attributes = True
 
 
+#Вспомогательные схемы
 class OwnerInEvent(BaseModel):
     id: int
     username: str
@@ -82,19 +105,10 @@ class TicketInUser(BaseModel):
     class Config:
         from_attributes = True
 
+#Схемы билетов
+class TicketCreate(BaseModel):
+    event_id: int
 
-
-class Event(BaseModel):
-    id: int
-    title: str
-    description: str
-    start_time: datetime
-    location: str
-    owner: OwnerInEvent
-    tickets: List[TicketInEvent] = []
-
-    class Config:
-        from_attributes = True
 
 class Ticket(BaseModel):
     id: int
@@ -103,18 +117,6 @@ class Ticket(BaseModel):
 
     class Config:
         from_attributes = True
-
-class EventShort(BaseModel):
-    id: int
-    title: str
-    description: str
-    start_time: datetime
-    location: str
-    owner: OwnerInEvent
-
-    class Config:
-        from_attributes = True
-
 
 Event.model_rebuild()
 Ticket.model_rebuild()

@@ -5,25 +5,19 @@ from sqlalchemy.orm import declarative_base, relationship
 Base = declarative_base()
 
 class User(Base):
-    """
-    Модель пользователя.
-    """
+    # Модель пользователя.
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
-
     created_events = relationship("Event", back_populates="owner")
-
     tickets = relationship("Ticket", back_populates="participant")
 
 
 class Event(Base):
-    """
-    Модель мероприятия.
-    """
+    # Модель мероприятия.
     __tablename__ = "events"
 
     id = Column(Integer, primary_key=True)
@@ -34,22 +28,16 @@ class Event(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="created_events")
-
     tickets = relationship("Ticket", back_populates="event", cascade="all, delete-orphan")
 
 
 class Ticket(Base):
-    """
-    Модель билета.
-    """
+    # Модель билета.
     __tablename__ = "tickets"
 
     id = Column(Integer, primary_key=True)
-
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
-
     participant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     event = relationship("Event", back_populates="tickets")
-
     participant = relationship("User", back_populates="tickets")
