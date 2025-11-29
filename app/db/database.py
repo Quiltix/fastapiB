@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-engine = create_async_engine("postgresql+asyncpg://postgres:qwerty123@localhost:5432/event_db", echo=True)
+engine = create_async_engine("postgresql+asyncpg://user123:qwerty123@localhost:5432/event", echo=True)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
