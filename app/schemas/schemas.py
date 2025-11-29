@@ -104,6 +104,17 @@ class Ticket(BaseModel):
     class Config:
         from_attributes = True
 
+class EventShort(BaseModel):
+    id: int
+    title: str
+    description: str
+    start_time: datetime
+    location: str
+    owner: OwnerInEvent
+
+    class Config:
+        from_attributes = True
+
 
 Event.model_rebuild()
 Ticket.model_rebuild()
