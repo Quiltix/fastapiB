@@ -7,7 +7,8 @@ import app.service.user as userservice
 from app.service.security import decode_token, check_jwt
 
 router = APIRouter(
-    prefix="/user"
+    prefix="/user",
+    tags=["user"]
 )
 
 @router.post("/register", status_code=status.HTTP_200_OK, response_model=schemas.User, summary="Регистрация нового пользователя")

@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.db.database import engine
 from app.db.models import Base
 from app.routes.user import router as user_router
+from app.routes.event import router as event_router
 # Создаем экземпляр FastAPI
 app = FastAPI()
 
@@ -21,4 +22,5 @@ async def on_startup():
 # Когда мы создадим app/routers/users.py и app/routers/events.py,
 # мы раскомментируем эти строки.
 app.include_router(user_router)
+app.include_router(event_router)
 # app.include_router(events.router)

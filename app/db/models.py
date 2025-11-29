@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -29,9 +29,8 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True, nullable=False)
     description = Column(String, nullable=True)
-    start_time = Column(DateTime)
+    start_time = Column(DateTime(timezone=True))
     location = Column(String, nullable=False)
-
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="created_events")
@@ -46,7 +45,7 @@ class Ticket(Base):
     __tablename__ = "tickets"
 
     id = Column(Integer, primary_key=True, index=True)
-    registration_time = Column(DateTime, default=datetime.datetime.now)
+    start_time = Column(DateTime(timezone=True),default=datetime.datetime.now)
 
 
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
