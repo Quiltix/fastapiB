@@ -3,6 +3,42 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+#Вспомогательные схемы
+class OwnerInEvent(BaseModel):
+    id: int
+    username: str
+
+
+class ParticipantInTicket(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        from_attributes = True
+
+class TicketInEvent(BaseModel):
+    id: int
+    participant: ParticipantInTicket
+
+    class Config:
+        from_attributes = True
+
+
+class EventInUser(BaseModel):
+    id: int
+    title: str
+    start_time: datetime
+
+    class Config:
+        from_attributes = True
+
+class TicketInUser(BaseModel):
+    id: int
+    event: EventInUser
+
+    class Config:
+        from_attributes = True
+
 #Схемы пользователя
 class UpdateUsername(BaseModel):
     username: str = Field(..., min_length=5)
@@ -69,41 +105,6 @@ class EventShort(BaseModel):
         from_attributes = True
 
 
-#Вспомогательные схемы
-class OwnerInEvent(BaseModel):
-    id: int
-    username: str
-
-
-class ParticipantInTicket(BaseModel):
-    id: int
-    username: str
-
-    class Config:
-        from_attributes = True
-
-class TicketInEvent(BaseModel):
-    id: int
-    participant: ParticipantInTicket
-
-    class Config:
-        from_attributes = True
-
-
-class EventInUser(BaseModel):
-    id: int
-    title: str
-    start_time: datetime
-
-    class Config:
-        from_attributes = True
-
-class TicketInUser(BaseModel):
-    id: int
-    event: EventInUser
-
-    class Config:
-        from_attributes = True
 
 #Схемы билетов
 class TicketCreate(BaseModel):

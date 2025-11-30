@@ -1,5 +1,17 @@
 version: '3.8'
 services:
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user123:qwerty123@db:5432/event
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
   db:
     image: postgres:16-alpine
 
@@ -7,6 +19,16 @@ services:
       POSTGRES_USER: user123
       POSTGRES_DB: event
       POSTGRES_PASSWORD: qwerty123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
 
     ports:
-      - 127.0.0.1:5432:5432
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user123 -d event" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
