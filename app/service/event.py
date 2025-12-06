@@ -5,6 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
+import user as user_service
+import security
 
 from app.db import models
 from app.schemas import schemas
@@ -109,3 +111,19 @@ async def get_old_events(db: AsyncSession) -> List[models.Event]:
     )
     result = await db.execute(query)
     return result.scalars().unique().all()
+
+
+async def delete_event_by_admin(db: AsyncSession, event_id: int, user_id: int):
+    # Удаляет мероприятие (только для администраторов).
+    user = await user_service.get_by_id(db,user_id=user_id)
+    await security.check_admin(user)
+    event_to_delete = await get_by_id(db, event_id=event_id)
+    if not event_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Мероприятие не найдено."
+        )
+
+    await db.delete(event_to_delete)
+    await db.commit()
+    return
