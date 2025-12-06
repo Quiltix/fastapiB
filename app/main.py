@@ -8,6 +8,7 @@ from app.routes.user import router as user_router
 from app.routes.event import router as event_router
 from app.routes.ticket import router as ticket_router
 from app.routes.auth import router as auth_router
+from app.routes.admin import router as admin_router
 
 
 app = FastAPI()
@@ -26,3 +27,4 @@ app.include_router(user_router)
 app.include_router(event_router)
 app.include_router(ticket_router)
 app.include_router(auth_router)
+app.include_router(admin_router)

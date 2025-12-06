@@ -1,8 +1,11 @@
+from typing import List
+
 from rich import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import status, HTTPException
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import joinedload
+import app.service.event as event_service
 
 from app.db import models
 from app.schemas import schemas
@@ -66,20 +69,45 @@ async def update(db: AsyncSession, user: models.User) -> models.User:
     return user
 
 
-async def ban_user(db: AsyncSession, user_id_to_ban: int, admin_user_id: int) -> models.User:
-    # Блокирует пользователя (только для администраторов).
-    admin_user = await get_by_id(db, user_id=admin_user_id)
+async def ban_user(db: AsyncSession, user_id_to_ban: int, admin_id: int) -> models.User:
+    # Блокировка пользователя и удаляет его события
+    admin_user = await get_by_id(db, admin_id)
+    await security.check_admin(admin_user)
+
     if user_id_to_ban == admin_user.id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Администратор не может заблокировать сам себя.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Администратор не может заблокировать сам себя."
+        )
 
     user_to_ban = await get_by_id(db, user_id=user_id_to_ban)
     if not user_to_ban:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь для блокировки не найден.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь для блокировки не найден."
+        )
+
+    await event_service.delete_events_by_owner(db, owner_id=user_id_to_ban)
+
 
     user_to_ban.banned = True
-    user_to_ban.user = "Banned_"+ user_to_ban.id
-    await update(db, user=user_to_ban)
+    db.add(user_to_ban)
+
+    await db.commit()
+
+    await db.refresh(user_to_ban)
     return user_to_ban
+
+async def get_all_users(db: AsyncSession, user_id: int) -> List[models.User]:
+    # Возвращает список всех пользователей системы.
+    user = await get_by_id(db, user_id=user_id)
+    await security.check_admin(user)
+    query = (
+        select(models.User)
+        .order_by(models.User.id)
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
 

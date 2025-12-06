@@ -52,6 +52,16 @@ class User(BaseModel):
     username: str
     created_events: List[EventInUser] = []
     tickets: List[TicketInUser] = []
+    is_admin: bool
+
+    class Config:
+        from_attributes = True
+
+class UserAdminView(BaseModel):
+    id: int
+    username: str
+    banned: bool
+    is_admin: bool
 
     class Config:
         from_attributes = True

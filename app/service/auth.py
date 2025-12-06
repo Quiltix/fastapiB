@@ -20,6 +20,22 @@ async def register_new_user(db: AsyncSession, user_schema: schemas.UserAuth) -> 
 
     return created_user
 
+
+async def register_new_admin(db: AsyncSession, user_schema: schemas.UserAuth, password: str) -> models.User:
+    # Регистрация нового адмнистратора
+    if password != "admin":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный пароль")
+    existing_user = await user_service.get_by_username(db, username=user_schema.username)
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь уже существует")
+
+    hashed_password = security.get_password_hash(user_schema.password)
+
+    new_user_instance = await create_admin(db=db, username=user_schema.username, hashed_password=hashed_password)
+
+    created_user = await user_service.get_by_id(db, user_id=new_user_instance.id)
+
+    return created_user
 async def authenticate_user(db: AsyncSession, user_schema: schemas.UserAuth) -> models.User:
     # Аутентификация пользователя
     user = await user_service.get_by_username(db, username=user_schema.username)
@@ -34,6 +50,14 @@ async def authenticate_user(db: AsyncSession, user_schema: schemas.UserAuth) -> 
 async def create(db: AsyncSession, username: str, hashed_password: str) -> models.User:
     # Создание нового пользователя
     db_user = models.User(username=username, hashed_password=hashed_password)
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+    return db_user
+
+async def create_admin(db: AsyncSession, username: str, hashed_password: str) -> models.User:
+    # Создание нового пользователя
+    db_user = models.User(username=username, hashed_password=hashed_password,is_admin=True)
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)

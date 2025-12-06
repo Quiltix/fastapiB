@@ -4,9 +4,9 @@ from typing import List
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
-import user as user_service
-import security
+from sqlalchemy.orm import joinedload
+import app.service.user as user_service
+import app.service.security as security
 
 from app.db import models
 from app.schemas import schemas
@@ -126,4 +126,16 @@ async def delete_event_by_admin(db: AsyncSession, event_id: int, user_id: int):
 
     await db.delete(event_to_delete)
     await db.commit()
+    return
+
+
+async def delete_events_by_owner(db: AsyncSession, owner_id: int):
+    # Удаляет все мероприятия пользователя.
+    query = select(models.Event).where(models.Event.owner_id == owner_id)
+    result = await db.execute(query)
+    events_to_delete = result.scalars().all()
+
+    if events_to_delete:
+        for event in events_to_delete:
+            await db.delete(event)
     return
