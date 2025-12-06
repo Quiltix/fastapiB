@@ -11,6 +11,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    banned = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
 
     created_events = relationship("Event", back_populates="owner")
     tickets = relationship("Ticket", back_populates="participant")
