@@ -8,6 +8,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from jose import JWTError, jwt
 
+from app.db.models import User
 from app.schemas.schemas import TokenData
 
 SECRET_KEY = "a_very_secret_key_for_event_platform"
@@ -63,3 +64,11 @@ async def check_jwt(credentials: HTTPBearer = Depends(HTTPBearer(auto_error=Fals
         return int(token_data.sub)
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Ошибка аутентификации")
+async def check_admin(user: User) -> User:
+    # Проверяет, является ли пользователь администратором.
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Недостаточно прав для выполнения этого действия."
+        )
+    return user
