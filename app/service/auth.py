@@ -26,6 +26,8 @@ async def authenticate_user(db: AsyncSession, user_schema: schemas.UserAuth) -> 
 
     if not user or not security.verify_password(user_schema.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный логин или пароль")
+    if user.banned:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ваш аккаунт заблокирован.")
 
     return user
 

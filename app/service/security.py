@@ -67,8 +67,5 @@ async def check_jwt(credentials: HTTPBearer = Depends(HTTPBearer(auto_error=Fals
 async def check_admin(user: User) -> User:
     # Проверяет, является ли пользователь администратором.
     if not user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Недостаточно прав для выполнения этого действия."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав для выполнения этого действия.")
     return user
